@@ -10,13 +10,15 @@ class BillingApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        primarySwatch: Colors.teal,
+        primarySwatch: Colors.deepPurple,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
       home: BillingPage(),
     );
   }
 }
+
+// Apna Adda The Roof Top Cafe - Billing Section
 
 class BillingPage extends StatefulWidget {
   @override
