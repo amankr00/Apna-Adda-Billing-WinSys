@@ -405,7 +405,7 @@ class ProfileIcon extends StatelessWidget {
         shape: BoxShape.circle,
         border: Border.all(
           color: Colors.purple,
-          width: 100,
+          width: 99,
         ),
       ),
       child: ClipOval(
