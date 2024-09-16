@@ -196,7 +196,7 @@ class _BillingPageState extends State<BillingPage> {
           "Apna Adda Billing",
           style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
         ),
-        backgroundColor: Colors.teal,
+        backgroundColor: Colors.deepPurple[100],
       ),
       body: Center(
         child: Container(
@@ -207,6 +207,9 @@ class _BillingPageState extends State<BillingPage> {
               key: _formKey,
               child: ListView(
                 children: [
+
+                  ProfileIcon(),
+
                   customerInfoFields(),
                   SizedBox(height: 20),
                   Divider(),
@@ -375,6 +378,42 @@ class _BillingPageState extends State<BillingPage> {
           },
         ),
       ],
+    );
+  }
+}
+
+
+class ProfileIcon extends StatelessWidget {
+  // final String imageUrl;
+  // final double size;
+  // final Color borderColor;
+  // final double borderWidth;
+
+  // ProfileIcon({
+  //   // required this.imageUrl,
+  //   // this.size = 50.0,
+  //   // this.borderColor = Colors.white,
+  //   // this.borderWidth = 2.0,
+  // });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 100,
+      height: 100,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        border: Border.all(
+          color: Colors.purple,
+          width: 100,
+        ),
+      ),
+      child: ClipOval(
+        child: Image.network(
+          'assets/images/png/dp.png',
+          fit: BoxFit.cover,
+        ),
+      ),
     );
   }
 }
