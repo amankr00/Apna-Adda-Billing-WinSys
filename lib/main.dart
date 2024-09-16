@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 
 void main() {
-  runApp(const BillingApp());
+  runApp(BillingApp());
 }
 
 class BillingApp extends StatelessWidget {
-  const BillingApp({Key? key}) : super(key: key);
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -15,14 +13,13 @@ class BillingApp extends StatelessWidget {
         primarySwatch: Colors.deepPurple,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: const BillingPage(),
+      home: BillingPage(),
     );
   }
 }
 
+// Apna Adda The Roof Top Cafe - Billing Section
 class BillingPage extends StatefulWidget {
-  const BillingPage({Key? key}) : super(key: key);
-
   @override
   _BillingPageState createState() => _BillingPageState();
 }
@@ -33,97 +30,61 @@ class _BillingPageState extends State<BillingPage> {
   String phoneNumber = '';
   String address = '';
 
-  // Menu items and prices defined in one place to avoid redundancy
-  final Map<String, List<Map<String, dynamic>>> menuData = {
+  final Map<String, List<String>> menuItems = {
     'Indian': [
-      {'name': 'Sahi Paneer', 'price': 349.00},
-      {'name': 'Paneer Masala', 'price': 279.00},
-      {'name': 'Paneer Butter Masala', 'price': 299.00},
-      {'name': 'Dal Makhani', 'price': 199.00},
-      {'name': 'Jeera Rice', 'price': 120.00},
-      {'name': 'Biryani', 'price': 249.00},
-      {'name': 'Butter Chicken', 'price': 349.00},
+      'Sahi Paneer',
+      'Paneer Masala',
+      'Paneer Butter Masala',
+      // Add more items
     ],
-    'Naan': [
-      {'name': 'Tandoori Roti', 'price': 25.00},
-      {'name': 'Butter Tandoori Roti', 'price': 30.00},
-      {'name': 'Plain Naan', 'price': 35.00},
-      {'name': 'Butter Naan', 'price': 45.00},
-      {'name': 'Garlic Naan', 'price': 50.00},
-      {'name': 'Laccha Paratha', 'price': 50.00},
-    ],
-    'Italian': [
-      {'name': 'Margherita Pizza', 'price': 299.00},
-      {'name': 'Farmhouse Pizza', 'price': 349.00},
-      {'name': 'Pasta Alfredo', 'price': 229.00},
-      {'name': 'Pasta Arrabbiata', 'price': 229.00},
-      {'name': 'Lasagna', 'price': 349.00},
-      {'name': 'Garlic Bread', 'price': 99.00},
-    ],
-    'Chinese': [
-      {'name': 'Spring Rolls', 'price': 149.00},
-      {'name': 'Hakka Noodles', 'price': 199.00},
-      {'name': 'Chilli Chicken', 'price': 249.00},
-      {'name': 'Manchurian', 'price': 199.00},
-      {'name': 'Schezwan Fried Rice', 'price': 199.00},
-      {'name': 'Sweet and Sour Pork', 'price': 299.00},
-    ],
-    'Beverages': [
-      {'name': 'Lemonade', 'price': 50.00},
-      {'name': 'Iced Tea', 'price': 70.00},
-      {'name': 'Coke', 'price': 40.00},
-      {'name': 'Pepsi', 'price': 40.00},
-      {'name': 'Milkshake', 'price': 120.00},
-      {'name': 'Smoothie', 'price': 150.00},
-    ],
-    'Desserts': [
-      {'name': 'Ice Cream', 'price': 100.00},
-      {'name': 'Brownie', 'price': 150.00},
-      {'name': 'Cheesecake', 'price': 200.00},
-      {'name': 'Gulab Jamun', 'price': 50.00},
-      {'name': 'Rasmalai', 'price': 80.00},
-      {'name': 'Tiramisu', 'price': 250.00},
-    ],
+    'Naan': ['Tandoori Roti', 'Butter Tandoori Roti'],
+    'Rice': ['Plain Rice', 'Jeera Rice'],
+    'Salads': ['Onion Salad', 'Green Salad'],
+    // Add more categories
   };
 
-  // Initialize item quantities to 0
-  final Map<String, int> itemQuantities = {};
+  final Map<String, List<double>> menuPrices = {
+    'Indian': [349.00, 279.00, 299.00],
+    'Naan': [25.00, 30.00],
+    'Rice': [99.00, 199.00],
+    'Salads': [49.00, 89.00],
+    // Add prices for other categories
+  };
 
-  @override
-  void initState() {
-    super.initState();
-    // Initialize quantities for all menu items
-    menuData.forEach((category, items) {
-      for (var item in items) {
-        itemQuantities[item['name']] = 0;
-      }
-    });
-  }
+  final Map<String, int> itemQuantities = {
+    'Sahi Paneer': 0,
+    'Paneer Masala': 0,
+    'Paneer Butter Masala': 0,
+    'Tandoori Roti': 0,
+    'Butter Tandoori Roti': 0,
+    'Plain Rice': 0,
+    'Jeera Rice': 0,
+    'Onion Salad': 0,
+    'Green Salad': 0,
+  };
 
-  // Calculate the total price of the selected items
   double calculateTotal() {
     double total = 0.0;
-    menuData.forEach((category, items) {
-      for (var item in items) {
-        total += itemQuantities[item['name']]! * item['price'];
+    menuItems.forEach((category, items) {
+      for (int i = 0; i < items.length; i++) {
+        total += itemQuantities[items[i]]! * menuPrices[category]![i];
       }
     });
     return total;
   }
 
-  // Generate a bill summary
   String generateBillSummary() {
-    final buffer = StringBuffer();
+    StringBuffer buffer = StringBuffer();
     buffer.writeln("Customer: $customerName");
     buffer.writeln("Phone: $phoneNumber");
     buffer.writeln("Address: $address\n");
     buffer.writeln("Items:");
 
-    menuData.forEach((category, items) {
-      for (var item in items) {
-        if (itemQuantities[item['name']]! > 0) {
+    menuItems.forEach((category, items) {
+      for (int i = 0; i < items.length; i++) {
+        if (itemQuantities[items[i]]! > 0) {
           buffer.writeln(
-              "${item['name']} (x${itemQuantities[item['name']]}) - \Rs${(item['price'] * itemQuantities[item['name']]!).toStringAsFixed(2)}");
+              "${items[i]} (x${itemQuantities[items[i]]}) - \Rs${(menuPrices[category]![i] * itemQuantities[items[i]]!).toStringAsFixed(2)}");
         }
       }
     });
@@ -136,7 +97,7 @@ class _BillingPageState extends State<BillingPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           "Apna Adda Billing",
           style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
         ),
@@ -144,64 +105,44 @@ class _BillingPageState extends State<BillingPage> {
       ),
       body: Center(
         child: Container(
-          width: MediaQuery.of(context).size.width * 0.98,
-          padding: const EdgeInsets.all(16.0),
-          child: Form(
-            key: _formKey,
-            child: ListView(
-              children: [
-                // Profile icon at the top
-                const ProfileIcon(),
-                customerInfoFields(),
-                const SizedBox(height: 20),
-                const Divider(),
-                // Display each menu section
-                ...menuData.keys.map((category) => Column(
-                      children: [
-                        menuSection(category),
-                        const Divider(),
-                      ],
-                    )),
-                const SizedBox(height: 20),
-                // Display the total price
-                Text(
-                  'Total: \Rs${calculateTotal().toStringAsFixed(2)}',
-                  style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.teal),
-                ),
-                const SizedBox(height: 20),
-                // Button to generate the bill
-                ElevatedButton(
-                  onPressed: () {
-                    if (_formKey.currentState!.validate()) {
-                      _formKey.currentState!.save();
-                      showDialog(
-                        context: context,
-                        builder: (BuildContext context) {
-                          return AlertDialog(
-                            title: const Text(
-                              'Bill Summary',
-                              style: TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                            content: Text(generateBillSummary()),
-                            actions: [
-                              TextButton(
-                                onPressed: () {
-                                  Navigator.of(context).pop();
-                                },
-                                child: const Text('OK'),
-                              ),
-                            ],
-                          );
-                        },
-                      );
-                    }
-                  },
-                  child: const Text('Generate Bill'),
-                ),
-              ],
+          width: MediaQuery.of(context).size.width * 0.7,
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Form(
+              key: _formKey,
+              child: ListView(
+                children: [
+                  ProfileIcon(),
+                  customerInfoFields(),
+                  SizedBox(height: 20),
+                  Divider(),
+                  menuSection('Indian'),
+                  Divider(),
+                  menuSection('Naan'),
+                  Divider(),
+                  menuSection('Rice'),
+                  Divider(),
+                  menuSection('Salads'),
+                  SizedBox(height: 20),
+                  Text(
+                    'Total: \Rs${calculateTotal().toStringAsFixed(2)}',
+                    style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.teal),
+                  ),
+                  SizedBox(height: 20),
+                  ElevatedButton(
+                    onPressed: () {
+                      if (_formKey.currentState!.validate()) {
+                        _formKey.currentState!.save();
+                        showBillSummaryDialog(context);
+                      }
+                    },
+                    child: Text('Generate Bill'),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -209,12 +150,12 @@ class _BillingPageState extends State<BillingPage> {
     );
   }
 
-  // Widget for customer information input fields
-  Widget customerInfoFields() {
+  // Helper Widget for customer information fields
+  Column customerInfoFields() {
     return Column(
       children: [
         TextFormField(
-          decoration: const InputDecoration(
+          decoration: InputDecoration(
             labelText: 'Customer Name',
             border: OutlineInputBorder(),
             prefixIcon: Icon(Icons.person),
@@ -229,9 +170,9 @@ class _BillingPageState extends State<BillingPage> {
             customerName = value ?? '';
           },
         ),
-        const SizedBox(height: 10),
+        SizedBox(height: 10),
         TextFormField(
-          decoration: const InputDecoration(
+          decoration: InputDecoration(
             labelText: 'Phone Number',
             border: OutlineInputBorder(),
             prefixIcon: Icon(Icons.phone),
@@ -247,9 +188,9 @@ class _BillingPageState extends State<BillingPage> {
             phoneNumber = value ?? '';
           },
         ),
-        const SizedBox(height: 10),
+        SizedBox(height: 10),
         TextFormField(
-          decoration: const InputDecoration(
+          decoration: InputDecoration(
             labelText: 'Address',
             border: OutlineInputBorder(),
             prefixIcon: Icon(Icons.location_on),
@@ -268,81 +209,146 @@ class _BillingPageState extends State<BillingPage> {
     );
   }
 
-  // Widget for each menu section
-  Widget menuSection(String category) {
+  Column menuSection(String category) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          category,
-          style: const TextStyle(
-              fontSize: 18, fontWeight: FontWeight.bold, color: Colors.blue),
+          '$category Items',
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         ),
-        const SizedBox(height: 10),
-        ...menuData[category]!.map((item) {
-          return Column(
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    '${item['name']} (\Rs${item['price'].toStringAsFixed(2)})',
-                    style: const TextStyle(fontSize: 16),
-                  ),
-                  quantityControl(item['name']),
-                ],
-              ),
-              const SizedBox(height: 5),
-            ],
-          );
-        }).toList(),
+        SizedBox(height: 10),
+        Column(
+          children: menuItems[category]!.map((item) {
+            return ListTile(
+              title: Text(item),
+              subtitle: Text(
+                  'Rs-${menuPrices[category]![menuItems[category]!.indexOf(item)].toStringAsFixed(2)}'),
+              trailing: quantityControl(item),
+            );
+          }).toList(),
+        ),
       ],
     );
   }
 
-  // Widget for quantity control buttons
-  Widget quantityControl(String itemName) {
+  Widget quantityControl(String item) {
     return Row(
+      mainAxisSize: MainAxisSize.min,
       children: [
         IconButton(
-          icon: const Icon(Icons.remove_circle_outline),
+          icon: Icon(Icons.remove_circle_outline),
           onPressed: () {
             setState(() {
-              if (itemQuantities[itemName]! > 0) {
-                itemQuantities[itemName] = itemQuantities[itemName]! - 1;
+              if (itemQuantities[item]! > 0) {
+                itemQuantities[item] = itemQuantities[item]! - 1;
               }
             });
           },
         ),
-        Text(
-          '${itemQuantities[itemName]}',
-          style: const TextStyle(fontSize: 16),
-        ),
+        Text(itemQuantities[item].toString()),
         IconButton(
-          icon: const Icon(Icons.add_circle_outline),
+          icon: Icon(Icons.add_circle_outline),
           onPressed: () {
             setState(() {
-              itemQuantities[itemName] = itemQuantities[itemName]! + 1;
+              itemQuantities[item] = itemQuantities[item]! + 1;
             });
           },
         ),
       ],
     );
   }
+
+  void showBillSummaryDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(
+            'Bill Summary',
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+          content: SizedBox(
+            width: MediaQuery.of(context).size.width * 0.9,
+            height: MediaQuery.of(context).size.height * 0.6,
+            child: Bill(
+              customerName: customerName,
+              phoneNumber: phoneNumber,
+              address: address,
+              total: calculateTotal(),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('Close'),
+            ),
+          ],
+        );
+      },
+    );
+  }
 }
 
-// Widget for displaying the profile icon
-class ProfileIcon extends StatelessWidget {
-  const ProfileIcon({Key? key}) : super(key: key);
+// Bill class to display the summary in a similar style to an Uber receipt
+class Bill extends StatelessWidget {
+  final String customerName;
+  final String phoneNumber;
+  final String address;
+  final double total;
+
+  Bill({
+    required this.customerName,
+    required this.phoneNumber,
+    required this.address,
+    required this.total,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 20),
-      child: const CircleAvatar(
-        radius: 40,
-        backgroundImage: AssetImage('assets/profile_icon.png'),
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Receipt'),
       ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Apna Adda The Roof Top Cafe',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+            ),
+            Divider(),
+            Text('Customer: $customerName'),
+            Text('Phone: $phoneNumber'),
+            Text('Address: $address'),
+            SizedBox(height: 10),
+            Divider(),
+            Text(
+              'Total Bill: \Rs${total.toStringAsFixed(2)}',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            SizedBox(height: 20),
+            Divider(),
+            Text('Thank you for visiting Apna Adda!'),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ProfileIcon widget to represent the user's profile
+class ProfileIcon extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return CircleAvatar(
+      radius: 30,
+      backgroundImage: NetworkImage(
+          'https://example.com/profile_image.jpg'), // Replace with actual image URL
     );
   }
 }
