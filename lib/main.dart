@@ -1,4 +1,8 @@
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:printing/printing.dart';
 
 void main() {
   runApp(BillingApp());
@@ -18,7 +22,6 @@ class BillingApp extends StatelessWidget {
   }
 }
 
-// Apna Adda The Roof Top Cafe - Billing Section
 class BillingPage extends StatefulWidget {
   @override
   _BillingPageState createState() => _BillingPageState();
@@ -31,16 +34,10 @@ class _BillingPageState extends State<BillingPage> {
   String address = '';
 
   final Map<String, List<String>> menuItems = {
-    'Indian': [
-      'Sahi Paneer',
-      'Paneer Masala',
-      'Paneer Butter Masala',
-      // Add more items
-    ],
+    'Indian': ['Sahi Paneer', 'Paneer Masala', 'Paneer Butter Masala'],
     'Naan': ['Tandoori Roti', 'Butter Tandoori Roti'],
     'Rice': ['Plain Rice', 'Jeera Rice'],
     'Salads': ['Onion Salad', 'Green Salad'],
-    // Add more categories
   };
 
   final Map<String, List<double>> menuPrices = {
@@ -48,7 +45,6 @@ class _BillingPageState extends State<BillingPage> {
     'Naan': [25.00, 30.00],
     'Rice': [99.00, 199.00],
     'Salads': [49.00, 89.00],
-    // Add prices for other categories
   };
 
   final Map<String, int> itemQuantities = {
@@ -73,24 +69,66 @@ class _BillingPageState extends State<BillingPage> {
     return total;
   }
 
-  String generateBillSummary() {
-    StringBuffer buffer = StringBuffer();
-    buffer.writeln("Customer: $customerName");
-    buffer.writeln("Phone: $phoneNumber");
-    buffer.writeln("Address: $address\n");
-    buffer.writeln("Items:");
+  Future<Uint8List> _generateBillPdf() async {
+    final pdf = pw.Document();
+    pdf.addPage(
+      pw.Page(
+        build: (pw.Context context) {
+          return pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: [
+              pw.Text('Apna Adda The Roof Top Cafe',
+                  style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 20)),
+              pw.Divider(),
+              pw.Text('Customer: $customerName'),
+              pw.Text('Phone: $phoneNumber'),
+              pw.Text('Address: $address'),
+              pw.SizedBox(height: 10),
+              pw.Divider(),
+              pw.Text('Items Purchased:'),
+              pw.ListView.builder(
+                itemCount: menuItems.length,
+                itemBuilder: (context, index) {
+                  String category = menuItems.keys.elementAt(index);
+                  return pw.Column(
+                    crossAxisAlignment: pw.CrossAxisAlignment.start,
+                    children: [
+                      pw.Text('$category:'),
+                      pw.ListView.builder(
+                        itemCount: menuItems[category]!.length,
+                        itemBuilder: (context, itemIndex) {
+                          String item = menuItems[category]![itemIndex];
+                          int quantity = itemQuantities[item]!;
+                          if (quantity > 0) {
+                            return pw.Text(
+                              '$item (x$quantity) - Rs${(menuPrices[category]![itemIndex] * quantity).toStringAsFixed(2)}',
+                            );
+                          }
+                          return pw.Container();
+                        },
+                      ),
+                    ],
+                  );
+                },
+              ),
+              pw.SizedBox(height: 20),
+              pw.Text('Total: Rs${calculateTotal().toStringAsFixed(2)}',
+                  style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold)),
+              pw.Divider(),
+              pw.Text('Thank you for visiting Apna Adda!'),
+            ],
+          );
+        },
+      ),
+    );
+    return pdf.save();
+  }
 
-    menuItems.forEach((category, items) {
-      for (int i = 0; i < items.length; i++) {
-        if (itemQuantities[items[i]]! > 0) {
-          buffer.writeln(
-              "${items[i]} (x${itemQuantities[items[i]]}) - \Rs${(menuPrices[category]![i] * itemQuantities[items[i]]!).toStringAsFixed(2)}");
-        }
-      }
-    });
-
-    buffer.writeln("\nTotal: \Rs${calculateTotal().toStringAsFixed(2)}");
-    return buffer.toString();
+  void _printOrSavePdf() async {
+    Uint8List pdfData = await _generateBillPdf();
+    await Printing.layoutPdf(
+      onLayout: (PdfPageFormat format) async => pdfData,
+    );
   }
 
   @override
@@ -112,7 +150,6 @@ class _BillingPageState extends State<BillingPage> {
               key: _formKey,
               child: ListView(
                 children: [
-                  ProfileIcon(),
                   customerInfoFields(),
                   SizedBox(height: 20),
                   Divider(),
@@ -125,7 +162,7 @@ class _BillingPageState extends State<BillingPage> {
                   menuSection('Salads'),
                   SizedBox(height: 20),
                   Text(
-                    'Total: \Rs${calculateTotal().toStringAsFixed(2)}',
+                    'Total: Rs${calculateTotal().toStringAsFixed(2)}',
                     style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
@@ -136,10 +173,10 @@ class _BillingPageState extends State<BillingPage> {
                     onPressed: () {
                       if (_formKey.currentState!.validate()) {
                         _formKey.currentState!.save();
-                        showBillSummaryDialog(context);
+                        _printOrSavePdf();
                       }
                     },
-                    child: Text('Generate Bill'),
+                    child: Text('Generate and Print Bill'),
                   ),
                 ],
               ),
@@ -150,7 +187,6 @@ class _BillingPageState extends State<BillingPage> {
     );
   }
 
-  // Helper Widget for customer information fields
   Column customerInfoFields() {
     return Column(
       children: [
@@ -256,99 +292,6 @@ class _BillingPageState extends State<BillingPage> {
           },
         ),
       ],
-    );
-  }
-
-  void showBillSummaryDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text(
-            'Bill Summary',
-            style: TextStyle(fontWeight: FontWeight.bold),
-          ),
-          content: SizedBox(
-            width: MediaQuery.of(context).size.width * 0.9,
-            height: MediaQuery.of(context).size.height * 0.6,
-            child: Bill(
-              customerName: customerName,
-              phoneNumber: phoneNumber,
-              address: address,
-              total: calculateTotal(),
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: Text('Close'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-}
-
-// Bill class to display the summary in a similar style to an Uber receipt
-class Bill extends StatelessWidget {
-  final String customerName;
-  final String phoneNumber;
-  final String address;
-  final double total;
-
-  Bill({
-    required this.customerName,
-    required this.phoneNumber,
-    required this.address,
-    required this.total,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Receipt'),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Apna Adda The Roof Top Cafe',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
-            ),
-            Divider(),
-            Text('Customer: $customerName'),
-            Text('Phone: $phoneNumber'),
-            Text('Address: $address'),
-            SizedBox(height: 10),
-            Divider(),
-            Text(
-              'Total Bill: \Rs${total.toStringAsFixed(2)}',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 20),
-            Divider(),
-            Text('Thank you for visiting Apna Adda!'),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// ProfileIcon widget to represent the user's profile
-class ProfileIcon extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return CircleAvatar(
-      radius: 30,
-      backgroundImage: NetworkImage(
-          'https://example.com/profile_image.jpg'), // Replace with actual image URL
     );
   }
 }
